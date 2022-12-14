@@ -13,6 +13,7 @@ import ru.axtane.springcource.FirstRestApp.services.PeopleService;
 import ru.axtane.springcource.FirstRestApp.util.PersonErrorResponse;
 import ru.axtane.springcource.FirstRestApp.util.PersonNotCreatedException;
 import ru.axtane.springcource.FirstRestApp.util.PersonNotFoundException;
+import ru.axtane.springcource.FirstRestApp.util.PersonNotUpdatedException;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -40,6 +41,32 @@ public class PeopleController {
     @GetMapping("/{id}")
     public PersonDTO getPerson(@PathVariable("id") int id) {
         return convertToPersonDTO(peopleService.findOne(id)); // Jackson конвертирует в JSON
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<HttpStatus> deletePerson(@PathVariable("id") int id) {
+        peopleService.deleteById(id);
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<HttpStatus> updatePerson(@PathVariable("id") int id,
+                                                   @RequestBody @Valid PersonDTO personDTO,
+                                                   BindingResult bindingResult) {
+        if (bindingResult.hasErrors()){
+            StringBuilder errorMessage = new StringBuilder();
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            for (FieldError error : errors){
+                errorMessage.append(error.getField())
+                        .append(" - ").append(error.getDefaultMessage())
+                        .append(";");
+            }
+            throw new PersonNotUpdatedException(errorMessage.toString());
+        }
+        peopleService.update(id, personDTO);
+
+        //отправляем http ответ с пустым телом и статусом 200
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @PostMapping
@@ -73,6 +100,16 @@ public class PeopleController {
 
     @ExceptionHandler
     private ResponseEntity<PersonErrorResponse> handleException(PersonNotCreatedException e) {
+        PersonErrorResponse response = new PersonErrorResponse(
+                e.getMessage(),
+                System.currentTimeMillis()
+        );
+        //в HTTP ответе тело ответа (response) и статус в заголовке
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler
+    private ResponseEntity<PersonErrorResponse> handleException(PersonNotUpdatedException e) {
         PersonErrorResponse response = new PersonErrorResponse(
                 e.getMessage(),
                 System.currentTimeMillis()

@@ -1,6 +1,7 @@
 package ru.axtane.springcource.FirstRestApp.models;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
@@ -11,7 +12,6 @@ import java.time.LocalDateTime;
 public class Person {
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
     @Column(name = "name")
@@ -24,10 +24,11 @@ public class Person {
     private int age;
 
     @Column(name = "email")
+    @Email(message = "email should be correct")
     @NotEmpty(message = "Email should not be empty")
     private String email;
 
-    @Column(name = "created_at")
+   /* @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
@@ -35,7 +36,7 @@ public class Person {
 
     @Column(name = "created_who")
     @NotEmpty
-    private String createdWho;
+    private String createdWho;*/
 
     public Person() {
 
@@ -78,7 +79,7 @@ public class Person {
         this.email = email;
     }
 
-    public LocalDateTime getCreatedAt() {
+   /* public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
@@ -100,5 +101,5 @@ public class Person {
 
     public void setCreatedWho(String createdWho) {
         this.createdWho = createdWho;
-    }
+    }*/
 }
